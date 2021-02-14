@@ -1,16 +1,7 @@
 const Joi = require("joi");
+const { Customer, validate } = require("../models/customer");
 const mongoose = require("mongoose");
 const express = require("express");
-
-const genreSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minlength: 3,
-    maxlength: 100,
-  },
-});
-const Genre = mongoose.model("Genre", genreSchema);
 
 const router = express.Router();
 
@@ -20,22 +11,22 @@ const apiEndPointWithId = `/:id`;
 //get generes
 router.get(apiEndPoint, async (req, res) => {
   try {
-    const genres = await Genre.find();
-    res.send(genres);
+    const customers = await Customer.find();
+    res.send(customers);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(400).send(error.message);
   }
 });
 
 //get generes
 router.get(apiEndPointWithId, async (req, res) => {
   try {
-    const genre = await Genre.findById(req.params.id);
-    if (!genre) {
+    const customer = await Customer.findById(req.params.id);
+    if (!customer) {
       res.status(400).send("No record found with the given Id.");
       return;
     }
-    res.send(genre);
+    res.send(customer);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -43,15 +34,13 @@ router.get(apiEndPointWithId, async (req, res) => {
 
 //post new genre
 router.post(apiEndPoint, async (req, res) => {
-  const { error } = validateGenre(req.body);
+  const { error } = validate(req.body);
   if (error) return res.status(400).send(error.message);
 
-  const genre = new Genre({
-    name: req.body.name,
-  });
+  const customer = new Customer(req.body);
 
   try {
-    const result = await genre.save();
+    const result = await customer.save();
     res.send(result);
   } catch (error) {
     res.status(400).send(error.message);
@@ -60,22 +49,22 @@ router.post(apiEndPoint, async (req, res) => {
 
 //update existing genre
 router.put(apiEndPointWithId, async (req, res) => {
-  const { error } = validateGenre(req.body);
+  const { error } = validate(req.body);
   if (error) return res.status(400).send(error.message);
 
   try {
-    const genre = await Genre.findByIdAndUpdate(
+    const customer = await Customer.findByIdAndUpdate(
       req.params.id,
       {
         $set: req.body,
       },
       { new: true }
     );
-    if (!genre) {
+    if (!customer) {
       res.status(400).send("No record found with the given Id.");
       return;
     }
-    res.send(genre);
+    res.send(customer);
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -84,22 +73,15 @@ router.put(apiEndPointWithId, async (req, res) => {
 //delete existing genre
 router.delete(apiEndPointWithId, async (req, res) => {
   try {
-    const genre = await Genre.findByIdAndRemove(req.params.id);
-    if (!genre) {
+    const customer = await Customer.findByIdAndRemove(req.params.id);
+    if (!customer) {
       res.status(400).send("No record found with the given Id.");
       return;
     }
-    res.send(genre);
+    res.send(customer);
   } catch (error) {
     res.status(400).send(error.message);
   }
 });
-
-function validateGenre(genre) {
-  const schema = Joi.object({
-    name: Joi.string().required().min(3),
-  });
-  return schema.validate(genre);
-}
 
 module.exports = router;
