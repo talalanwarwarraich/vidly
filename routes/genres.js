@@ -1,77 +1,108 @@
-const Joi = require('joi');
-const express = require('express');
+const Joi = require("joi");
+const mongoose = require("mongoose");
+const express = require("express");
+
+const Schema = mongoose.Schema;
+const objectId = Schema.ObjectId;
+
+const genreSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    minlength: 3,
+    maxlength: 100,
+  },
+});
+const Genre = mongoose.model("Genre", genreSchema);
 
 const router = express.Router();
 
-const apiEndPoint = '/';
+const apiEndPoint = "/";
 const apiEndPointWithId = `/:id`;
 
-const genreCollection = [
-    {
-        id: 1,
-        name: 'Action'
-    },
-    {
-        id: 2,
-        name: 'Horror'
-    },
-    {
-        id: 3,
-        name: 'Comedy'
-    },
-    {
-        id: 4,
-        name: 'Adventure'
-    }
-]
+//get generes
+router.get(apiEndPoint, async (req, res) => {
+  try {
+    const genres = await Genre.find();
+    res.send(genres);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
 
 //get generes
-router.get(apiEndPoint, (req, res) => {
-    res.send(genreCollection);
+router.get(apiEndPointWithId, async (req, res) => {
+  try {
+    const genre = await Genre.findById(req.params.id);
+    if (!genre) {
+      res.status(400).send("No record found with the given Id.");
+      return;
+    }
+    res.send(genre);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 //post new genre
-router.post(apiEndPoint, (req, res) => {
-    const { error } = validateGenre(req.body);
-    if (error) return res.status(400).send(error.message);
+router.post(apiEndPoint, async (req, res) => {
+  const { error } = validateGenre(req.body);
+  if (error) return res.status(400).send(error.message);
 
-    const genre = {
-        id: genreCollection.length + 1,
-        name: req.body.name
-    };
-    genreCollection.push(genre);
-    res.send(genre);
-})
+  const genre = new Genre({
+    name: req.body.name,
+  });
+
+  try {
+    const result = await genre.save();
+    res.send(result);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 
 //update existing genre
-router.put(apiEndPointWithId, (req, res) => {
-    const genre = genreCollection.find(g => g.id === parseInt(req.params.id));
-    if (!genre) return res.status(404).send(`There was no genre for id ${req.params.id}`);
+router.put(apiEndPointWithId, async (req, res) => {
+  const { error } = validateGenre(req.body);
+  if (error) return res.status(400).send(error.message);
 
-    const { error } = validateGenre(req.body);
-    if (error) return res.status(400).send(error.message);
-
-    genre.name = req.body.name;
-    const index = genreCollection.indexOf(genre);
-    genreCollection[index] = genre;
+  try {
+    const genre = await Genre.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      { new: true }
+    );
+    if (!genre) {
+      res.status(400).send("No record found with the given Id.");
+      return;
+    }
     res.send(genre);
-})
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 
 //delete existing genre
-router.delete(apiEndPointWithId, (req, res) => {
-    const genre = genreCollection.find(g => g.id === parseInt(req.params.id));
-    if (!genre) return res.status(404).send(`There was no genre for id ${req.params.id}`);
-
-    const index = genreCollection.indexOf(genre);
-    genreCollection.splice(index, 1);
+router.delete(apiEndPointWithId, async (req, res) => {
+  try {
+    const genre = await Genre.findByIdAndRemove(req.params.id);
+    if (!genre) {
+      res.status(400).send("No record found with the given Id.");
+      return;
+    }
     res.send(genre);
-})
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 
 function validateGenre(genre) {
-    const schema = Joi.object({
-        name: Joi.string().required().min(3)
-    })
-    return schema.validate(genre);
+  const schema = Joi.object({
+    name: Joi.string().required().min(3),
+  });
+  return schema.validate(genre);
 }
 
 module.exports = router;
