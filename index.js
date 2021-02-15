@@ -6,16 +6,16 @@ const express = require("express");
 var app = express();
 
 const connectionParams = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false,
-  useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
 };
 
 mongoose
-  .connect("mongodb://localhost/vidly", connectionParams)
-  .then(() => console.log("Connected to mongoDb Database..."))
-  .catch((err) => console.log("Error: ", err.message));
+    .connect("mongodb://localhost/vidly", connectionParams)
+    .then(() => console.log("Connected to mongoDb Database..."))
+    .catch((err) => console.log("Error: ", err.message));
 
 app.use(express.json());
 
