@@ -1,6 +1,10 @@
+const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 const genres = require("./routes/genres");
 const customers = require("./routes/customers");
 const movies = require("./routes/movies");
+const rentals = require("./routes/rentals");
+const users = require("./routes/users");
 const mongoose = require("mongoose");
 const home = require("./routes/home");
 const express = require("express");
@@ -28,6 +32,8 @@ app.use("/", home);
 app.use(`${baseUrl}genres`, genres);
 app.use(`${baseUrl}customers`, customers);
 app.use(`${baseUrl}movies`, movies);
+app.use(`${baseUrl}rentals`, rentals);
+app.use(`${baseUrl}users`, users);
 
 const port = process.env.PORT || 3000;
 app.listen(port);
