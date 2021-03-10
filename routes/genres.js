@@ -1,3 +1,4 @@
+const auth = require("../middleware/auth");
 const express = require("express");
 const { Genre, validate } = require("../models/genre");
 const router = express.Router();
@@ -30,7 +31,7 @@ router.get(apiEndPointWithId, async (req, res) => {
 });
 
 //post new genre
-router.post(apiEndPoint, async (req, res) => {
+router.post(apiEndPoint, auth, async (req, res) => {
     const { error } = validate(req.body);
     if (error) return res.status(400).send(error.message);
 
