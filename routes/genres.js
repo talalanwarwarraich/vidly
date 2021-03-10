@@ -1,4 +1,5 @@
 const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
 const express = require("express");
 const { Genre, validate } = require("../models/genre");
 const router = express.Router();
@@ -71,7 +72,7 @@ router.put(apiEndPointWithId, async (req, res) => {
 });
 
 //delete existing genre
-router.delete(apiEndPointWithId, async (req, res) => {
+router.delete(apiEndPointWithId, [auth, admin], async (req, res) => {
     try {
         const genre = await Genre.findByIdAndRemove(req.params.id);
         if (!genre) {
