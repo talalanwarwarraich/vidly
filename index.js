@@ -1,3 +1,6 @@
+require("express-async-errors");
+const winston = require("winston");
+const error = require("./middleware/error");
 const config = require("config");
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
@@ -11,6 +14,8 @@ const mongoose = require("mongoose");
 const home = require("./routes/home");
 const express = require("express");
 var app = express();
+
+winston.add(winston.transports.File, { filename: "vidly_logs.log" });
 
 if (!config.get("jwtPrivateKey")) {
     console.error("FATAL ERROR: jwtPrivateKey is not set.");
@@ -47,6 +52,8 @@ app.use(`${baseUrl}movies`, movies);
 app.use(`${baseUrl}rentals`, rentals);
 app.use(`${baseUrl}users`, users);
 app.use(`${baseUrl}auth`, auth);
+
+app.use(error);
 
 const port = process.env.PORT || 3000;
 app.listen(port);
